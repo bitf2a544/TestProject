@@ -1,0 +1,81 @@
+name: Build Flavors (dev / uat / production)
+
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'Flavor to build'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - dev
+          - uat
+          - production
+      build_type:
+        description: 'Build type'
+        required: true
+        default: debug
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  prepare:
+    name: Resolve flavors
+    runs-on: ubuntu-latest
+    outputs:
+      flavors: ${{ steps.set.outputs.flavors }}
+    steps:
+      - id: set
+        run: |
+          if [ "${{ inputs.flavor }}" = "all" ]; then
+            echo 'flavors=["dev","uat","production"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'flavors=["${{ inputs.flavor }}"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build ${{ matrix.flavor }} ${{ inputs.build_type }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: ${{ fromJson(needs.prepare.outputs.flavors) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Grant execute permissions for gradlew
+        run: chmod +x gradlew
+
+      - name: Capitalize names
+        id: names
+        run: |
+          flavor="${{ matrix.flavor }}"
+          type="${{ inputs.build_type }}"
+          echo "flavor_cap=$(echo "${flavor:0:1}" | tr a-z A-Z)${flavor:1}" >> "$GITHUB_OUTPUT"
+          echo "type_cap=$(echo "${type:0:1}" | tr a-z A-Z)${type:1}" >> "$GITHUB_OUTPUT"
+
+      - name: Run unit tests
+        run: ./gradlew test${{ steps.names.outputs.flavor_cap }}DebugUnitTest
+
+      - name: Assemble APK
+        run: ./gradlew assemble${{ steps.names.outputs.flavor_cap }}${{ steps.names.outputs.type_cap }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.flavor }}-${{ inputs.build_type }}
+          path: app/build/outputs/apk/${{ matrix.flavor }}/${{ inputs.build_type }}/*.apk
+          if-no-files-found: error

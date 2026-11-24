@@ -28,12 +28,38 @@ android {
             )
         }
     }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "CICD Practice Dev")
+            buildConfigField("String", "ENVIRONMENT", "\"dev\"")
+        }
+        create("uat") {
+            dimension = "environment"
+            applicationIdSuffix = ".uat"
+            versionNameSuffix = "-uat"
+            resValue("string", "app_name", "CICD Practice UAT")
+            buildConfigField("String", "ENVIRONMENT", "\"uat\"")
+        }
+        create("production") {
+            dimension = "environment"
+            resValue("string", "app_name", "CICD Practice")
+            buildConfigField("String", "ENVIRONMENT", "\"production\"")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+        resValues = true
     }
 }
 
