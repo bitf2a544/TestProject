@@ -1,0 +1,55 @@
+name: Deploy to Google Play
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Grant execute permissions for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew clean testDebugUnitTest
+
+  distribute:
+    name: Distribute bundle to Google Play
+    needs: test        //it means run first test job if it fail then nothing will execute furture
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Version Bump
+        uses: chkfung/android-version-action@v1.2.3
+        with:
+          gradlepath: app/build.gradle.kts
+          versionCode: ${{ github.run_number }}
+
+      - name: Assemble Release Bundle
+        run: ./gradle bundleRelease
+
+      - name: Sign Release
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/bundle/release
