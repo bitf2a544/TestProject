@@ -36,19 +36,19 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     Column()
     {
         Text(
-            text = "Hello111 $name!",
+            text = "Hello $name!",
             modifier = modifier
         )
         Text(
-            text = "Hello222 $name!",
+            text = "Hello $name!",
             modifier = modifier
         )
         Text(
-            text = "Hello333 $name!",
+            text = "Hello $name!",
             modifier = modifier
         )
         Text(
-            text = "Hello444 $name!",
+            text = "Hello $name!",
             modifier = modifier
         )
     }
