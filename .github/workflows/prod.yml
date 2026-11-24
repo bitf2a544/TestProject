@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew clean testDebugUnitTest
+        run: ./gradlew clean testProductionDebugUnitTest
 
   distribute:
     name: Distribute bundle to Google Play
@@ -47,9 +47,9 @@ jobs:
           versionCode: ${{ github.run_number }}
 
       - name: Assemble Release Bundle
-        run: ./gradle bundleRelease
+        run: ./gradlew bundleProductionRelease
 
       - name: Sign Release
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/bundle/release
+          releaseDirectory: app/build/outputs/bundle/productionRelease
