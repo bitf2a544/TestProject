@@ -6,7 +6,12 @@ on:
 
 jobs:
   build:
+    name: Unit tests (${{ matrix.flavor }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Dev, Uat, Production]
 
     steps:
       - uses: actions/checkout@v4
@@ -22,4 +27,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew clean testDevDebugUnitTest
+        run: ./gradlew clean test${{ matrix.flavor }}DebugUnitTest
+
+      - name: Assemble debug APK
+        run: ./gradlew assemble${{ matrix.flavor }}Debug

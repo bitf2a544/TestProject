@@ -27,7 +27,7 @@ jobs:
 
   distribute:
     name: Distribute bundle to Google Play
-    needs: test        //it means run first test job if it fail then nothing will execute furture
+    needs: test        # run the test job first; if it fails, nothing else executes
     runs-on: ubuntu-latest
 
     steps:
@@ -39,6 +39,9 @@ jobs:
           distribution: 'temurin'
           java-version: 17
           cache: 'gradle'
+
+      - name: Grant execute permissions for gradlew
+        run: chmod +x gradlew
 
       - name: Version Bump
         uses: chkfung/android-version-action@v1.2.3
